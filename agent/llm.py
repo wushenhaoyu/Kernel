@@ -3,7 +3,7 @@ from openai import OpenAI
 
 DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY")
 OPENAI_KEY   = os.getenv("OPENAI_API_KEY")
-GEMINI_KEY   = os.getenv("GEMINI_API_KEY")  
+GEMINI_KEY   = os.getenv("GEMINI_API_KEY")
 
 class LLM:
     def __init__(self,
@@ -18,9 +18,8 @@ class LLM:
         elif server_name == "openai":
             self.client = OpenAI(api_key=OPENAI_KEY)
         elif server_name == "gemini":
-            self.client = OpenAI(
-                api_key=GEMINI_KEY,   
-                base_url="https://generativelanguage.googleapis.com/v1beta/openai")
+            self.client = OpenAI(api_key=GEMINI_KEY,
+                                 base_url="https://generativelanguage.googleapis.com/v1beta/openai")
         else:
             raise ValueError("server_name must be openai | deepseek | gemini")
 
@@ -29,14 +28,13 @@ class LLM:
         self.temperature = temperature
         self.top_p = top_p
 
-    def chat(self, system: str, user: str) -> str:
-        messages = [
-            {"role": "system", "content": system},
-            {"role": "user", "content": user}
-        ]
+    def chat(self, user: str, system: str = "You are a helpful CUDA optimization assistant.") -> str:
         resp = self.client.chat.completions.create(
             model=self.model,
-            messages=messages,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user}
+            ],
             max_tokens=self.max_tokens,
             temperature=self.temperature,
             top_p=self.top_p
