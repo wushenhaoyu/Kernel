@@ -40,3 +40,9 @@ class LLM:
             top_p=self.top_p
         )
         return resp.choices[0].message.content
+    
+    def change_temperature(self, temperature: float) -> None:
+        self.temperature = temperature
+
+    def change_top_p(self, top_p: float) -> None:
+        self.top_p = top_p
