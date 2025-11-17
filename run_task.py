@@ -11,6 +11,7 @@ from datetime import datetime
 
 def build_parser():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--device", type=int, default=0, help="CUDA device index for benchmarking")
     parser.add_argument("--server_name", type=str, default="deepseek")
     parser.add_argument("--model", type=str, default="gpt-4")
     parser.add_argument("--max_tokens", type=int, default=1024)
