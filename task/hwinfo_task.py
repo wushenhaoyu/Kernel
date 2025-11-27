@@ -15,7 +15,7 @@ from agent.prompt.hwinfo_prompt import hwinfo_prompt
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-def run_oneshot_task(tasks: List[Path], llm: LLM, run_dir: Path, gpu_name: str) -> None:
+def run_hwinfo_task(tasks: List[Path], llm: LLM, run_dir: Path, gpu_name: str) -> None:
     for task in tasks:
         task_name = task.stem
         task_root = (run_dir / task.parent.name / task_name).resolve()

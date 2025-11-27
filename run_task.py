@@ -13,7 +13,7 @@ def build_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", type=int, default=0, help="CUDA device index for benchmarking")
     parser.add_argument("--server_name", type=str, default="deepseek")
-    parser.add_argument("--model", type=str, default="gpt-4")
+    parser.add_argument("--model", type=str, default="deepseek-chat")
     parser.add_argument("--max_tokens", type=int, default=1024)
     parser.add_argument("--temperature", type=float, default=0.7)
     parser.add_argument("--top_p", type=float, default=1.0)
@@ -52,17 +52,49 @@ def make_run_dir(base_dir: Path, server_name: str, model: str, task_type: str) -
     logging.info(f"Run directory created at: {run_dir}")
     return run_dir
 
-
-
-
-
 def main():
     arg = build_parser().parse_args()
 
-    tasks = collect_task(Path(arg.task_file), task_level=0, task_id=0)
+    tasks = collect_task(Path(arg.task_file), task_level=arg.task_level, task_id=arg.task_id)
 
     dir = make_run_dir(Path("./runs"), arg.server_name, arg.model, arg.task_type)
 
     llm = LLM(server_name=arg.server_name, model=arg.model, max_tokens=arg.max_tokens, temperature=arg.temperature, top_p=arg.top_p)
+
+    task_type = arg.task_type
+
+    if task_type == "oneshot":
+        from task.oneshot_task import run_oneshot_task
+        run_oneshot_task(tasks, llm, dir)
+
+    elif task_type == "sampling":
+        from task.sampling_task import run_sampling_task
+        run_sampling_task(tasks, llm, dir)
+
+    elif task_type == "refine":
+        from task.refine_task import run_refine_task
+        run_refine_task(tasks, llm, dir)
+
+    elif task_type == "hwinfo":
+        from task.hwinfo_task import run_hwinfo_task
+        run_hwinfo_task(llm, tasks, dir, arg.gpu_name)
+
+    
+if __name__ == "__main__":
+    main()
+     
+
+
+
+
+
+#def main():
+#    arg = build_parser().parse_args()
+#
+#    tasks = collect_task(Path(arg.task_file), task_level=0, task_id=0)
+#
+#    dir = make_run_dir(Path("./runs"), arg.server_name, arg.model, arg.task_type)
+#
+#    llm = LLM(server_name=arg.server_name, model=arg.model, max_tokens=arg.max_tokens, temperature=arg.temperature, top_p=arg.top_p)
 
     

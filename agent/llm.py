@@ -7,14 +7,14 @@ GEMINI_KEY   = os.getenv("GEMINI_API_KEY")
 
 class LLM:
     def __init__(self,
-                 server_name: str = "openai",
-                 model: str = "gpt-4",
+                 server_name: str = "deepseek",
+                 model: str = "deepseek-chat",
                  max_tokens: int = 1024,
                  temperature: float = 0.7,
                  top_p: float = 1.0):
         if server_name == "deepseek":
             self.client = OpenAI(api_key=DEEPSEEK_KEY,
-                                 base_url="https://api.deepseek.com/v1")
+                                 base_url="https://api.deepseek.com")
         elif server_name == "openai":
             self.client = OpenAI(api_key=OPENAI_KEY)
         elif server_name == "gemini":

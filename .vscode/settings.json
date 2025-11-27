@@ -1,0 +1,14 @@
+{
+    // 集成终端启动时先跑 VS 环境脚本
+    "terminal.integrated.profiles.windows": {
+        "PowerShell + VS2019": {
+            "source": "PowerShell",
+            "args": [
+                "-NoExit",
+                "-Command",
+                "& { $vs=&'${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\Installer\\vswhere.exe' -version '[16.0,17.0)' -property installationPath; if($vs){cmd /c \"`\"$vs\\Common7\\Tools\\VsDevCmd.bat`\" -arch=amd64 -host_arch=amd64 && set\"|%{if($_-match '^(.*?)=(.*)$'){[System.Environment]::SetEnvironmentVariable($matches[1],$matches[2])}} } }"
+            ]
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell + VS2019"
+}
