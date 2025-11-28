@@ -1,0 +1,1 @@
+{"compiled": true, "correct": true, "speedup": 0.11484886771092047, "ref_avg_ms": 65.06850000150735, "test_avg_ms": 566.557610000018, "max_err": 0.005126953125, "error": null, "error_log": null, "mean_err": 0.000716238806489855}

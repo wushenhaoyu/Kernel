@@ -9,7 +9,7 @@ from typing import List
 
 
 from agent.llm import LLM
-from utils.utils import read_file, write_file, compile_kernel, benchmark_both, correctness_test
+from utils.utils import read_file, write_file, compile_kernel, correctness_and_benchmark, strip_fence, load_models_and_inputs
 from agent.prompt.oneshot_prompt import oneshot_prompt
 
 
@@ -30,7 +30,7 @@ def run_oneshot_task(tasks: List[Path], llm: LLM, run_dir: Path) -> None:
         code_file = rnd_dir / "code" / "generated.py"
         arch_src = read_file(task)
         prompt = oneshot_prompt(arch_src)
-        output = llm.chat(prompt)
+        output = strip_fence(llm.chat(prompt))
         write_file(str(code_file), output)
 
 
@@ -58,12 +58,9 @@ def run_oneshot_task(tasks: List[Path], llm: LLM, run_dir: Path) -> None:
         summary["compiled"] = True
 
         try:
-            import importlib.util
-            spec = importlib.util.spec_from_file_location("gen_mod", code_file)
-            gen_mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(gen_mod)
-            RefModel = getattr(gen_mod, "Model", None)
-            ModelNew = getattr(gen_mod, "ModelNew", None)
+            RefModel, ModelNew, inputs = load_models_and_inputs(
+                ref_py=task_root / "ref.py", generated_py=code_file
+            )
             if None in (RefModel, ModelNew):
                 raise RuntimeError("Model or ModelNew missing")
         except Exception as e:
@@ -73,22 +70,17 @@ def run_oneshot_task(tasks: List[Path], llm: LLM, run_dir: Path) -> None:
             continue
 
         try:
-            passed, max_err, _ = correctness_test(RefModel(), ModelNew(), DEVICE)
+            passed, max_err, mean_err, ref_avg, test_avg = correctness_and_benchmark(
+                RefModel, ModelNew, inputs, DEVICE, tol=1e-3, warmup=5, repeat=10
+            )
             summary["correct"] = passed
             summary["max_err"] = max_err
-        except Exception as e:
-            summary["error"] = "correctness"
-            summary["error_log"] = traceback.format_exc()
-            eval_file.write_text(json.dumps(summary), encoding="utf-8")
-            continue
-
-        try:
-            ref_avg, test_avg = benchmark_both(RefModel(), ModelNew(), DEVICE, warmup=5, repeat=10)
+            summary["mean_err"] = mean_err
             summary["ref_avg_ms"] = ref_avg
             summary["test_avg_ms"] = test_avg
             summary["speedup"] = ref_avg / test_avg if ref_avg else 0.0
         except Exception as e:
-            summary["error"] = "benchmark"
+            summary["error"] = "correctness_and_benchmark"
             summary["error_log"] = traceback.format_exc()
             eval_file.write_text(json.dumps(summary), encoding="utf-8")
             continue
