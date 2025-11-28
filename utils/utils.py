@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import importlib.util as _imu
 
-from typing import Tuple, List
+from typing import Any, Tuple, List
 from pathlib import Path
 from multiprocessing import get_context
 
@@ -87,10 +87,6 @@ def compile_kernel(py_path: Path) -> Tuple[bool, str]:
 
 
 
-from typing import List, Tuple, Any
-import torch
-import time
-
 def correctness_and_benchmark(
     ref_model: torch.nn.Module,
     test_model: torch.nn.Module,
@@ -100,14 +96,9 @@ def correctness_and_benchmark(
     warmup: int = 5,
     repeat: int = 20
 ) -> Tuple[bool, float, float, float, float]:
-    """
-    一次完成正确性验证 + 性能测试
-    返回: (passed, max_err, mean_err, ref_avg_ms, test_avg_ms)
-    """
-    # ---- 1. 设备迁移 ----
+
     inputs = [x.to(device) if isinstance(x, torch.Tensor) else x for x in inputs]
 
-    # ---- 2. 正确性测试 ----
     def _first_tensor(x: Any) -> torch.Tensor:
         if isinstance(x, torch.Tensor):
             return x
@@ -115,7 +106,7 @@ def correctness_and_benchmark(
             for t in x:
                 if isinstance(t, torch.Tensor):
                     return t
-        raise RuntimeError("模型输出里找不到 Tensor")
+        raise RuntimeError("Moudle cannot find Tensor")
 
     with torch.no_grad():
         ref_out = ref_model(*inputs)
@@ -129,14 +120,11 @@ def correctness_and_benchmark(
         mean_err = diff.mean().item()
         passed = torch.allclose(ref_t, test_t, atol=tol, rtol=tol)
 
-    # ---- 3. 性能测试 ----
-    # warmup
     for _ in range(warmup):
         ref_model(*inputs)
     if device.type == "cuda":
         torch.cuda.synchronize()
 
-    # ref 计时
     ref_times = []
     for _ in range(repeat):
         if device.type == "cuda":
@@ -147,13 +135,11 @@ def correctness_and_benchmark(
             torch.cuda.synchronize()
         ref_times.append((time.perf_counter() - t0) * 1000)
 
-    # test warmup
     for _ in range(warmup):
         test_model(*inputs)
     if device.type == "cuda":
         torch.cuda.synchronize()
 
-    # test 计时
     test_times = []
     for _ in range(repeat):
         if device.type == "cuda":

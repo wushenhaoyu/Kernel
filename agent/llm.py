@@ -1,4 +1,6 @@
 import os
+import asyncio
+
 from openai import OpenAI
 
 DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY")
@@ -46,3 +48,9 @@ class LLM:
 
     def change_top_p(self, top_p: float) -> None:
         self.top_p = top_p
+
+    async def achat(self,
+                    user: str,
+                    system: str = "You are a helpful CUDA optimization assistant.") -> str:
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, self.chat, user, system)

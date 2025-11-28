@@ -1,3 +1,4 @@
+import asyncio
 import os
 import argparse
 import logging
@@ -65,7 +66,7 @@ def main():
 
     if task_type == "oneshot":
         from task.oneshot_task import run_oneshot_task
-        run_oneshot_task(tasks, llm, dir)
+        asyncio.run(run_oneshot_task(tasks, llm, dir))
 
     elif task_type == "sampling":
         from task.sampling_task import run_sampling_task
