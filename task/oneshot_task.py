@@ -72,7 +72,7 @@ def compile_one(task: Path, code_file: Path, run_dir: Path) -> None:
     if not ok:
         eval_file = code_file.parent.parent / "eval.json"
         summary = {"compiled": False, "error": "compile", "error_log": log}
-        eval_file.write_text(json.dumps(summary), encoding="utf-8")
+        eval_file.write_text(json.dumps(summary, indent=4, ensure_ascii=False), encoding="utf-8")
         print(f"[{task.stem}] compile failed")
 
 def test_one(task: Path, code_file: Path, run_dir: Path) -> None:
@@ -90,7 +90,7 @@ def test_one(task: Path, code_file: Path, run_dir: Path) -> None:
             raise RuntimeError("Model or ModelNew missing")
     except Exception as e:
         summary.update(error="import", error_log=traceback.format_exc())
-        eval_file.write_text(json.dumps(summary), encoding="utf-8")
+        eval_file.write_text(json.dumps(summary, indent=4, ensure_ascii=False), encoding="utf-8")
         return
 
     try:
@@ -102,5 +102,5 @@ def test_one(task: Path, code_file: Path, run_dir: Path) -> None:
     except Exception as e:
         summary.update(error="correctness_and_benchmark", error_log=traceback.format_exc())
 
-    eval_file.write_text(json.dumps(summary), encoding="utf-8")
+    eval_file.write_text(json.dumps(summary, indent=4, ensure_ascii=False), encoding="utf-8")
     print(f"[{task.stem}] speedup {summary['speedup']:.3f}x  -> {eval_file}")

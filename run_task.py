@@ -70,15 +70,15 @@ def main():
 
     elif task_type == "sampling":
         from task.sampling_task import run_sampling_task
-        run_sampling_task(tasks, llm, dir)
+        asyncio.run(run_sampling_task(tasks, llm, dir))
 
     elif task_type == "refine":
         from task.refine_task import run_refine_task
-        run_refine_task(tasks, llm, dir)
+        asyncio.run(run_refine_task(tasks, llm, dir))
 
     elif task_type == "hwinfo":
         from task.hwinfo_task import run_hwinfo_task
-        run_hwinfo_task(llm, tasks, dir, arg.gpu_name)
+        asyncio.run(run_hwinfo_task(llm, tasks, dir, arg.gpu_name))
 
     
 if __name__ == "__main__":
